@@ -1,0 +1,25 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "webpack",
+    "plugin:react/recommended"
+  ],
+  "plugins": [
+    "react"
+  ],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    "mocha/no-hooks": 0,
+    "no-console": "warn",
+    "no-undef": "warn",
+    "no-unused-vars": "warn",
+    "no-invalid-this": 0,
+    "react/prefer-stateless-function": 0,
+    "semi": "warn"
+  }
+}

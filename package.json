@@ -1,0 +1,46 @@
+{
+  "name": "react-flex-list",
+  "version": "0.1.0",
+  "description": "A flexible list with search and filters",
+  "author": "Weiye Sun",
+  "license": "MIT",
+  "main": "./lib",
+  "files": [
+    "dist",
+    "lib"
+  ],
+  "dependencies": {
+    "alasql": "^0.4.5",
+    "prop-types": "^15.6.1",
+    "react": "^16.3.1",
+    "react-dom": "^16.3.1",
+    "react-jsonschema-form": "^1.0.3",
+    "react-paginate": "^5.2.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.3",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "cross-env": "^5.1.4",
+    "eslint": "^4.19.1",
+    "eslint-config-webpack": "^1.2.5",
+    "eslint-plugin-react": "^7.7.0",
+    "express": "^4.16.3",
+    "react-addons-test-utils": "^15.6.2",
+    "react-hot-loader": "^4.0.0",
+    "sinon": "^4.5.0",
+    "style-loader": "^0.20.3",
+    "webpack": "^4.5.0",
+    "webpack-dev-middleware": "^3.1.2",
+    "webpack-hot-middleware": "^2.21.2"
+  },
+  "scripts": {
+    "build:lib": "cross-env NODE_ENV=production babel -d lib/ src/",
+    "start": "NODE_ENV=development node devServer.js"
+  }
+}
