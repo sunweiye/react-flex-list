@@ -7,9 +7,9 @@ class ListContainer extends Component {
     }
 
     render() {
-        const {data, renderItem} = this.props;
+        const {data, renderItem, ...listContainerProps} = this.props;
         return (
-            <div>
+            <div {...listContainerProps}>
                 {data.map((itemData, index) => renderItem(index, itemData))}
             </div>
         );
