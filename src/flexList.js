@@ -90,7 +90,7 @@ class FlexList extends Component {
             <div {...containerProps}>
                 {this._renderSearchForm()}
                 <ListContainer
-                    data={currentListData.slice(currentPage * pageSize, (currentPage + 1) * pageSize - 1 )}
+                    data={currentListData.slice(currentPage * pageSize, (currentPage + 1) * pageSize )}
                     renderItem={renderItem}
                     {...listContainerSettings}
                 />

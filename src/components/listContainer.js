@@ -19,7 +19,7 @@ class ListContainer extends Component {
 ListContainer.defaultProps = {
     data: [],
     renderItem: (index, itemData) => <div key={index}>{itemData instanceof Object ? JSON.stringify(itemData) : itemData}</div>
-}
+};
 
 ListContainer.propsTypes = {
     data: PropTypes.array,
