@@ -7,10 +7,10 @@ class ListContainer extends Component {
     }
 
     render() {
-        const {data, renderItem, ...listContainerProps} = this.props;
+        const {data, renderItem, onListRender, ...listContainerProps} = this.props;
         return (
             <div {...listContainerProps}>
-                {data.map((itemData, index) => renderItem(index, itemData))}
+                {onListRender(data).map((itemData, index) => renderItem(index, itemData))}
             </div>
         );
     }
@@ -18,12 +18,14 @@ class ListContainer extends Component {
 
 ListContainer.defaultProps = {
     data: [],
-    renderItem: (index, itemData) => <div key={index}>{itemData instanceof Object ? JSON.stringify(itemData) : itemData}</div>
+    renderItem: (index, itemData) => <div key={index}>{itemData instanceof Object ? JSON.stringify(itemData) : itemData}</div>,
+    onListRender: (data) => data
 };
 
 ListContainer.propsTypes = {
     data: PropTypes.array,
-    renderItem: PropTypes.func
+    renderItem: PropTypes.func,
+    onListRender: PropTypes.func
 };
 
 export default ListContainer;

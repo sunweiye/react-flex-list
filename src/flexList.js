@@ -5,7 +5,6 @@ import SearchForm from './components/searchForm';
 import ListContainer from './components/listContainer';
 import {QuerySearch} from './ulits/querySearch';
 
-
 const SearchFormSettings = {
     searchOnChange: false
 };
@@ -84,7 +83,7 @@ class FlexList extends Component {
     }
 
     render() {
-        const {listData, renderItem, searchForm, searchTextFields, listContainerSettings, pageSize, ...containerProps} = this.props;
+        const {listData, renderItem, searchForm, searchTextFields, pageSize, listContainerSettings, onListRender, ...containerProps} = this.props;
         const {currentListData, currentPage} = this.state;
         return (
             <div {...containerProps}>
@@ -92,6 +91,7 @@ class FlexList extends Component {
                 <ListContainer
                     data={currentListData.slice(currentPage * pageSize, (currentPage + 1) * pageSize )}
                     renderItem={renderItem}
+                    onListRender={onListRender}
                     {...listContainerSettings}
                 />
                 {this._renderPagination()}
@@ -110,10 +110,11 @@ FlexList.defaultProps = {
 FlexList.propsTypes = {
     listData: PropTypes.array,
     searchTextFields: PropTypes.array,
-    renderItem: PropTypes.func,
     searchForm: PropTypes.object,
     listContainerSettings: PropTypes.object,
-    pageSize: PropTypes.number
+    pageSize: PropTypes.number,
+    onListRender: PropTypes.func,
+    renderItem: PropTypes.func
 };
 
 export default FlexList
