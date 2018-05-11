@@ -66,24 +66,18 @@ class FlexList extends Component {
 
     _renderPagination() {
         if (this.state.pageCount > 1) {
-            return <ReactPaginate previousLabel={"previous"}
-                                  nextLabel={"next"}
-                                  breakLabel={<a href="">...</a>}
-                                  breakClassName={"break-me"}
-                                  pageCount={this.state.pageCount}
-                                  marginPagesDisplayed={2}
-                                  pageRangeDisplayed={5}
-                                  onPageChange={this._handlePageClick}
-                                  containerClassName={"pagination"}
-                                  subContainerClassName={"pages pagination"}
-                                  activeClassName={"active"}/>;
+            const {className, ...paginationSettings} = this.props.paginationSettings;
+            let paginationProps = {...paginationSettings, pageCount: this.state.pageCount, onPageChange: this._handlePageClick};
+            return <nav className={className}>
+                <ReactPaginate {...paginationProps}/>
+            </nav>;
         } else {
             return '';
         }
     }
 
     render() {
-        const {listData, renderItem, searchForm, searchTextFields, pageSize, listContainerSettings, onListRender, ...containerProps} = this.props;
+        const {listData, renderItem, searchForm, searchTextFields, pageSize, paginationSettings, listContainerSettings, onListRender, ...containerProps} = this.props;
         const {currentListData, currentPage} = this.state;
         return (
             <div {...containerProps}>
@@ -104,7 +98,8 @@ FlexList.defaultProps = {
     searchForm: SearchFormSettings,
     searchTextFields: [],
     listContainerSettings: {},
-    pageSize: 10
+    pageSize: 10,
+    paginationSettings: {}
 };
 
 FlexList.propsTypes = {
@@ -113,6 +108,7 @@ FlexList.propsTypes = {
     searchForm: PropTypes.object,
     listContainerSettings: PropTypes.object,
     pageSize: PropTypes.number,
+    paginationSettings: PropTypes.object,
     onListRender: PropTypes.func,
     renderItem: PropTypes.func
 };
