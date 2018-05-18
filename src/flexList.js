@@ -39,6 +39,7 @@ class FlexList extends Component {
             currentListData: results,
             formData: formData,
             pageCount: Math.ceil(results.length / this.props.pageSize),
+            currentPage: 0
         });
     };
 
