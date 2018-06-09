@@ -20,11 +20,11 @@ class QuerySearch {
     where = (conditions) => {
         this.conditions = conditions;
         return this;
-    }
+    };
 
     execute = () => {
         let sql = `SELECT ${this.selection} FROM ?`;
-        if(this.conditions) {
+        if(this.conditions.length) {
             sql = sql + ' WHERE ' + this.conditions;
         }
 

@@ -4,6 +4,7 @@ import ReactPaginate from 'react-paginate';
 import SearchForm from './components/searchForm';
 import ListContainer from './components/listContainer';
 import {QuerySearch} from './ulits/querySearch';
+import Utility from './ulits/utility';
 
 const SearchFormSettings = {
     searchOnChange: false
@@ -12,33 +13,58 @@ const SearchFormSettings = {
 class FlexList extends Component {
     constructor(props) {
         super(props);
+        this._fullListPageCount = Math.ceil(this.props.listData.length / this.props.pageSize);
         this.state = {
             currentListData: this.props.listData,
-            pageCount: Math.ceil(this.props.listData.length / this.props.pageSize),
-            formData: this.props.searchForm.formData,
+            pageCount: this._fullListPageCount,
             currentPage: 0
         }
     }
 
-    _handleSearch = ({formData}) => {
+    _handleSearch = (formData) => {
         const {_q, ...filters} = formData;
-        let results;
-        if(typeof _q === 'undefined' || _q.trim().length === 0) {
+        const {searchTextFields, filtersFieldsMap} = this.props;
+
+        let results,
+            resetAll = true,
+            searchKeywords = '',
+            queryKeywordsConditions = '',
+            queryFiltersConditions = [],
+            resultsPageCount;
+
+        if (_q !== '') {
+            resetAll = false;
+            searchKeywords = _q.split(' ').map((keyword) => keyword.trim());
+            queryKeywordsConditions = searchTextFields.map((field) => searchKeywords.map(
+                (searchKeyword) => `${field} LIKE "%${searchKeyword}%"`).join(' OR ')).join(' OR ');
+        }
+
+        for (let filterKey in filters) {
+            if(filtersFieldsMap.hasOwnProperty(filterKey) && !Utility.isEmpty(filters[filterKey])) {
+                resetAll = false;
+                queryFiltersConditions.push(filtersFieldsMap[filterKey] + ' = ' + filters[filterKey]);
+            }
+        }
+
+        if (resetAll) {
             results = this.props.listData;
+            resultsPageCount = this._fullListPageCount;
         } else {
-            let searchKeywords = _q.trim().split(' ').map((keyword) => keyword.trim()),
-                queryConditions = this.props.searchTextFields.map((field) => searchKeywords.map(
-                    (searchKeyword) => `${field} LIKE "%${searchKeyword}%"`).join(' OR ')).join(' OR ');
+            let queryWhere = queryFiltersConditions.join(' AND ');
+            if(searchKeywords.length) {
+                queryWhere = queryWhere + (queryWhere.length ? ' AND ' : '') + '(' + queryKeywordsConditions + ')';
+            }
+
             results = new QuerySearch()
                 .from(this.props.listData)
-                .where(queryConditions)
+                .where(queryWhere)
                 .execute();
+            resultsPageCount = Math.ceil(results.length / this.props.pageSize);
         }
 
         this.setState({
             currentListData: results,
-            formData: formData,
-            pageCount: Math.ceil(results.length / this.props.pageSize),
+            pageCount: resultsPageCount,
             currentPage: 0
         });
     };
@@ -48,19 +74,15 @@ class FlexList extends Component {
     };
 
     _renderSearchForm() {
-        if(this.props.searchForm.disable) {
+        if (this.props.searchForm.disable) {
             return '';
         }
 
         const searchFormProps = {
             ...SearchFormSettings,
             ...this.props.searchForm,
-            formData: this.state.formData,
-            onSubmit: this._handleSearch
+            onSearch: this._handleSearch
         };
-        if (this.props.searchForm.searchOnChange) {
-            searchFormProps.onChange = this._handleSearch;
-        }
 
         return <SearchForm {...searchFormProps} />;
     }
@@ -68,7 +90,11 @@ class FlexList extends Component {
     _renderPagination() {
         if (this.state.pageCount > 1) {
             const {className, ...paginationSettings} = this.props.paginationSettings;
-            let paginationProps = {...paginationSettings, pageCount: this.state.pageCount, onPageChange: this._handlePageClick};
+            let paginationProps = {
+                ...paginationSettings,
+                pageCount: this.state.pageCount,
+                onPageChange: this._handlePageClick
+            };
             return <nav className={className}>
                 <ReactPaginate {...paginationProps}/>
             </nav>;
@@ -78,13 +104,13 @@ class FlexList extends Component {
     }
 
     render() {
-        const {listData, renderItem, searchForm, searchTextFields, pageSize, paginationSettings, listContainerSettings, onListRender, ...containerProps} = this.props;
+        const {listData, renderItem, searchForm, searchTextFields, filtersFieldsMap, pageSize, paginationSettings, listContainerSettings, onListRender, ...containerProps} = this.props;
         const {currentListData, currentPage} = this.state;
         return (
             <div {...containerProps}>
                 {this._renderSearchForm()}
                 <ListContainer
-                    data={currentListData.slice(currentPage * pageSize, (currentPage + 1) * pageSize )}
+                    data={currentListData.slice(currentPage * pageSize, (currentPage + 1) * pageSize)}
                     renderItem={renderItem}
                     onListRender={onListRender}
                     {...listContainerSettings}
@@ -98,6 +124,7 @@ class FlexList extends Component {
 FlexList.defaultProps = {
     searchForm: SearchFormSettings,
     searchTextFields: [],
+    filtersFieldsMap: [],
     listContainerSettings: {},
     pageSize: 10,
     paginationSettings: {}
@@ -106,6 +133,7 @@ FlexList.defaultProps = {
 FlexList.propsTypes = {
     listData: PropTypes.array,
     searchTextFields: PropTypes.array,
+    filtersFieldsMap: PropTypes.array,
     searchForm: PropTypes.object,
     listContainerSettings: PropTypes.object,
     pageSize: PropTypes.number,
