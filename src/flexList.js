@@ -21,9 +21,28 @@ class FlexList extends Component {
         }
     }
 
+    _buildFilterCondition = (key, value) => {
+        const {filtersFieldsMap} = this.props;
+        if(typeof value === 'string') {
+            value = '"' + value + '"';
+        }
+
+        if(filtersFieldsMap.hasOwnProperty(key)) {
+            if (typeof filtersFieldsMap[key] === 'string') {
+                key = filtersFieldsMap[key];
+            } else {
+                key = Utility.isEmpty(filtersFieldsMap[key].name) ? key : filtersFieldsMap[key].name;
+                if(filtersFieldsMap[key].hasMultiValues) {
+                    return value + ' = ANY (' + key +')';
+                }
+            }
+        }
+
+        return (key + ' = ' + value);
+    };
+
     _handleSearch = (formData) => {
         const {_q, ...filters} = formData;
-        const {searchTextFields, filtersFieldsMap} = this.props;
 
         let results,
             resetAll = true,
@@ -35,14 +54,14 @@ class FlexList extends Component {
         if (_q !== '') {
             resetAll = false;
             searchKeywords = _q.split(' ').map((keyword) => keyword.trim());
-            queryKeywordsConditions = searchTextFields.map((field) => searchKeywords.map(
+            queryKeywordsConditions = this.props.searchTextFields.map((field) => searchKeywords.map(
                 (searchKeyword) => `${field} LIKE "%${searchKeyword}%"`).join(' OR ')).join(' OR ');
         }
 
         for (let filterKey in filters) {
-            if(filtersFieldsMap.hasOwnProperty(filterKey) && !Utility.isEmpty(filters[filterKey])) {
+            if(!Utility.isEmpty(filters[filterKey])) {
                 resetAll = false;
-                queryFiltersConditions.push(filtersFieldsMap[filterKey] + ' = ' + filters[filterKey]);
+                queryFiltersConditions.push(this._buildFilterCondition(filterKey, filters[filterKey]));
             }
         }
 
