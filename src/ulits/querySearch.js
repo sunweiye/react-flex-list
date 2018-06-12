@@ -28,7 +28,7 @@ class QuerySearch {
             sql = sql + ' WHERE ' + this.conditions;
         }
 
-        return alasql(sql, this.source)
+        return alasql(sql, this.source);
     }
 
 }
