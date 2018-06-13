@@ -85,11 +85,15 @@ class SearchForm extends Component {
     };
 
 
-    _updateSchemaConfigurations = (toBeShownFilters, visibilityConfig) => {
+    _updateSchemaConfigurations = (toBeShownFilters, visibilityConfig, changedFormFields) => {
         let schemaProperties = {...this.props.schema.properties},
             uiSchema = {...this.props.uiSchema},
             updatedProperties = {};
         for (let filterKey in toBeShownFilters) {
+            if(changedFormFields.has(filterKey)) {
+                continue;
+            }
+
             let updateMethod = visibilityConfig[filterKey] === SearchForm.HIDE_UNUSED_OPTION ? this._getPropertySchemaWithHide : this._getPropertySchemaWithDisabled,
                 propertyConfig = updateMethod(schemaProperties[filterKey], uiSchema[filterKey], toBeShownFilters[filterKey]);
 
@@ -103,29 +107,38 @@ class SearchForm extends Component {
         }
     };
 
-    _shouldSubmitData = (search, filters) => {
+    _getChangedFieldsData = (search, filters) => {
         let {_q, ...lastFilters} = this.state.formData,
-            lastSearchInput = this.state.formData['_q'] + '';
+            lastSearchInput = Utility.isEmpty(this.state.formData['_q']) ? '' : this.state.formData['_q'],
+            changedFields = new Set();
 
         if (lastSearchInput !== search) {
-            return true;
+            changedFields.add('_q');
+            if (this.props.searchOnChange) {
+                return changedFields;
+            }
         }
 
         // @todo Deep compare for the filters. Now a simple first level compare is uesd
         for (let filterKey in filters) {
             if (lastFilters[filterKey] !== filters[filterKey]) {
-                return true;
+                changedFields.add(filterKey);
+                if (this.props.searchOnChange) {
+                    return changedFields;
+                }
             }
         }
 
         return false;
     };
 
-    _submitSearchingData = ({formData}) => {
+    _submitSearchingData = ({formData, ...options}) => {
         const {_q, ...filters} = formData;
         formData._q = Utility.isEmpty(_q) ? '' : _q.trim();
 
-        if (this._shouldSubmitData(formData._q, filters)) {
+        let changedFormFields = this._getChangedFieldsData(formData._q, filters);
+
+        if (changedFormFields) {
             let message = this.props.onSearch(formData),
                 schemaConfiguration = {};
 
@@ -135,7 +148,7 @@ class SearchForm extends Component {
                     uiSchema: this.props.uiSchema
                 }
             } else if (message.operation === SearchForm.UPDATE_FORM_CONFIGURATION) {
-                schemaConfiguration = this._updateSchemaConfigurations(message.filtersData, message.filtersVisibility);
+                schemaConfiguration = this._updateSchemaConfigurations(message.filtersData, message.filtersVisibility, changedFormFields);
             }
 
             this.setState({
