@@ -91,12 +91,15 @@ class SearchForm extends Component {
     };
 
 
-    _updateSchemaConfigurations = (toBeShownFilters, visibilityConfig, changedFormFields) => {
+    _updateSchemaConfigurations = (toBeShownFilters, visibilityConfig, changedFormFields, formData) => {
         let schemaProperties = {...this.props.schema.properties},
             uiSchema = {...this.props.uiSchema},
-            updatedProperties = {};
+            updatedProperties = {},
+            formSchemas;
         for (let filterKey in toBeShownFilters) {
             if(changedFormFields.has(filterKey)) {
+                updatedProperties[filterKey] = {...this.state.schema.properties[filterKey]};
+                uiSchema[filterKey] = {...this.state.uiSchema[filterKey]};
                 continue;
             }
 
@@ -107,10 +110,16 @@ class SearchForm extends Component {
             uiSchema[filterKey] = propertyConfig.uiSchema;
         }
 
-        return {
+        formSchemas = {
             schema: {...this.props.schema, properties: {...this.props.schema.properties, ...updatedProperties}},
             uiSchema: {...uiSchema}
+        };
+
+        if (typeof this.props.onSchemaUpdate === 'function') {
+            this.props.onSchemaUpdate(formSchemas, formData);
         }
+
+        return formSchemas;
     };
 
     _getChangedFieldsData = (search, filters) => {
@@ -138,14 +147,14 @@ class SearchForm extends Component {
         return false;
     };
 
-    _submitSearchingData = ({formData, ...options}) => {
+    _submitSearchingData = ({formData}) => {
         const {_q, ...filters} = formData;
         formData._q = Utility.isEmpty(_q) ? '' : _q.trim();
 
         let changedFormFields = this._getChangedFieldsData(formData._q, filters);
 
         if (changedFormFields) {
-            let message = this.props.onSearch(formData),
+            let message = this.props.onSearch(formData, changedFormFields),
                 schemaConfiguration = {};
 
             if (message.operation === SearchForm.RESET_FORM_CONFIGURATION) {
@@ -154,7 +163,7 @@ class SearchForm extends Component {
                     uiSchema: this.props.uiSchema
                 }
             } else if (message.operation === SearchForm.UPDATE_FORM_CONFIGURATION) {
-                schemaConfiguration = this._updateSchemaConfigurations(message.filtersData, message.filtersVisibility, changedFormFields);
+                schemaConfiguration = this._updateSchemaConfigurations(message.filtersData, message.filtersVisibility, changedFormFields, formData);
             }
 
             this.setState({
@@ -165,7 +174,7 @@ class SearchForm extends Component {
     };
 
     render() {
-        const {onSubmit, onChange, onSearch, searchOnChange, schema, uiSchema, formData, ...formProps} = this.props;
+        const {onSchemaUpdate, onSubmit, onChange, onSearch, searchOnChange, schema, uiSchema, formData, ...formProps} = this.props;
         formProps.onSubmit = this._submitSearchingData;
 
         if (searchOnChange) {
@@ -190,6 +199,7 @@ SearchForm.defaultProps = {
 
 SearchForm.propTypes = {
     searchOnChange: PropTypes.bool,
+    onSchemaUpdate: PropTypes.func,
     schema: PropTypes.object,
     formData: PropTypes.object,
     onSearch: PropTypes.func

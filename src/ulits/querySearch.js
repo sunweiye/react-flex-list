@@ -26,7 +26,7 @@ class QuerySearch {
         let sql = `SELECT ${this.selection} FROM ?`;
         if(this.conditions.length) {
             sql = sql + ' WHERE ' + this.conditions;
-        }
+        };
 
         return alasql(sql, this.source);
     }

@@ -131,12 +131,14 @@ class FlexList extends Component {
             return value + ' = ANY (' + key + ')';
         }
 
+        if (!this.resolvedFiltersMapping.hasOwnProperty(key)) {
+            this.resolvedFiltersMapping[key] = key;
+        }
+
         return (this.resolvedFiltersMapping[key] + ' = ' + value);
     };
 
-    _handleSearch = (formData) => {
-        const {_q, ...filters} = formData;
-
+    _handleSearch = (formData, changedFormFields) => {
         let results,
             resetAll = true,
             searchKeywords = '',
@@ -148,6 +150,12 @@ class FlexList extends Component {
         this.toBeUpdatedFilters = {};
         for(let filterKey in this._dynamicUpdateFilters) {
             this.toBeUpdatedFilters[filterKey] = new Set();
+        }
+
+        const {_q, ...filters} = formData;
+
+        if(typeof this.props.beforeSearch === 'function') {
+            this.props.beforeSearch(formData, changedFormFields);
         }
 
         if (_q !== '') {
@@ -201,6 +209,10 @@ class FlexList extends Component {
                 filtersData: this.toBeUpdatedFilters,
                 filtersVisibility: filtersVisibilityConfig
             };
+
+            if(typeof this.props.afterSearch === 'function') {
+                results = this.props.afterSearch(formData, changedFormFields, results);
+            }
         }
 
         this.setState({
@@ -285,7 +297,9 @@ FlexList.propsTypes = {
     pageSize: PropTypes.number,
     paginationSettings: PropTypes.object,
     onListRender: PropTypes.func,
-    renderItem: PropTypes.func
+    renderItem: PropTypes.func,
+    beforeSearch: PropTypes.func,
+    afterSearch: PropTypes.func
 };
 
 export default FlexList
