@@ -73,6 +73,12 @@ class SearchForm extends Component {
             }
             schema.enum = enumKeys;
             schema.enumNames = enumNames;
+
+            if(usedOptions.size === 1) {
+                delete uiSchema["ui:placeholder"];
+                uiSchema['ui:disabled'] = true;
+                schema['default'] = enumKeys[0];
+            }
         } else {
             uiSchema['ui:disabled'] = true;
         }
