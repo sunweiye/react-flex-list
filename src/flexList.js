@@ -152,11 +152,11 @@ class FlexList extends Component {
             this.toBeUpdatedFilters[filterKey] = new Set();
         }
 
-        const {_q, ...filters} = formData;
-
         if(typeof this.props.beforeSearch === 'function') {
             this.props.beforeSearch(formData, changedFormFields);
         }
+
+        const {_q, ...filters} = formData;
 
         if (_q !== '') {
             resetAll = false;
@@ -259,7 +259,7 @@ class FlexList extends Component {
     }
 
     render() {
-        const {listData, listDataItemPreprocessor, renderItem, searchForm, searchTextFields, filtersFieldsMap, filtersVisibilityOnSearch, pageSize, paginationSettings, listContainerSettings, onListRender, ...containerProps} = this.props;
+        const {listData, listDataItemPreprocessor, renderItem, searchForm, searchTextFields, filtersFieldsMap, filtersVisibilityOnSearch, pageSize, paginationSettings, listContainerSettings, onListRender, beforeSearch, afterSearch, ...containerProps} = this.props;
         const {currentListData, currentPage} = this.state;
         return (
             <div {...containerProps}>
