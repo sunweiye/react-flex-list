@@ -7,10 +7,11 @@ class ListContainer extends Component {
     }
 
     render() {
-        const {data, renderItem, onListRender, ...listContainerProps} = this.props;
+        const {data, renderItem, onListRender, emptyListContent, children, ...listContainerProps} = this.props;
         return (
             <div {...listContainerProps}>
-                {onListRender(data).map((itemData, index) => renderItem(index, itemData))}
+                {data.length ? onListRender(data).map((itemData, index) => renderItem(index, itemData)) : emptyListContent}
+                {children}
             </div>
         );
     }
@@ -25,7 +26,8 @@ ListContainer.defaultProps = {
 ListContainer.propsTypes = {
     data: PropTypes.array,
     renderItem: PropTypes.func,
-    onListRender: PropTypes.func
+    onListRender: PropTypes.func,
+    emptyListContent: PropTypes.func
 };
 
 export default ListContainer;
