@@ -6,31 +6,6 @@ import ListContainer from './components/listContainer';
 import {QuerySearch} from './ulits/querySearch';
 import Utility from './ulits/utility';
 
-if (!Array.prototype.processByCallback) {
-    Array.prototype.processByCallback = function (callback) {
-        if (typeof callback === 'function') {
-            callback(this);
-        }
-    };
-}
-
-if (!String.prototype.processByCallback) {
-    String.prototype.processByCallback = function (callback) {
-        if (typeof callback === 'function') {
-            callback(this);
-        }
-    };
-}
-
-
-if (!Number.prototype.processByCallback) {
-    Number.prototype.processByCallback = function (callback) {
-        if (typeof callback === 'function') {
-            callback(this);
-        }
-    };
-}
-
 const SearchFormSettings = {
     searchOnChange: false
 };
@@ -187,7 +162,7 @@ class FlexList extends Component {
                 let propertyFieldName = this.resolvedFiltersMapping.hasOwnProperty(filterKey) ?
                     this.resolvedFiltersMapping[filterKey] : filterKey;
 
-                selection += (`, ${propertyFieldName}->processByCallback(_updateFilterDataOnSearch->bind("", "${filterKey}"))`);
+                selection += (`, ${propertyFieldName}->_updateFilterDataOnSearch->bind("", "${filterKey}")`);
                 filtersVisibilityConfig[filterKey] =
                     this.props.filtersVisibilityOnSearch[filterKey] === FlexList.HIDE_UNUSED_FILTERS_OPTIONS ?
                         SearchForm.HIDE_UNUSED_OPTION : SearchForm.DISABLE_UNUSED_OPTION
