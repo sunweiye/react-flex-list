@@ -6,9 +6,17 @@ import ListContainer from './components/listContainer';
 import {QuerySearch} from './ulits/querySearch';
 import Utility from './ulits/utility';
 
+class CallbackHelper {
+    callback = (func) => {
+        return typeof func === 'function' ? func() : '';
+    };
+}
+
 const SearchFormSettings = {
     searchOnChange: false
 };
+
+const itemCallbackHelper = new CallbackHelper();
 
 class FlexList extends Component {
     static SHOW_ALL_FILTERS_OPTIONS = 1;
@@ -17,10 +25,10 @@ class FlexList extends Component {
 
     constructor(props) {
         super(props);
+        this.resolvedFiltersMapping = this._resolveFilterMapping();
         this._dynamicUpdateFilters = {};
         this.listData = this._preProcess();
         this.toBeUpdatedFilters = {};
-        this.resolvedFiltersMapping = this._resolveFilterMapping();
         this._fullListPageCount = Math.ceil(this.props.listData.length / this.props.pageSize);
         this.state = {
             currentListData: this.listData,
@@ -55,6 +63,7 @@ class FlexList extends Component {
         if (shouldAddCallbackInProcessors) {
             processors.push((listItem) => {
                 listItem._updateFilterDataOnSearch = this._updateFilterDataOnSearch;
+                listItem._callback = itemCallbackHelper;
             });
         }
 
@@ -83,7 +92,7 @@ class FlexList extends Component {
         return mapping;
     };
 
-    // @todo condition ofitem field is object
+    // @todo condition of item field is object
     _updateFilterDataOnSearch = (filterKey, itemFiledData) => {
         if (Array.isArray(itemFiledData)) {
             for (let value of itemFiledData) {
@@ -111,6 +120,18 @@ class FlexList extends Component {
         }
 
         return (this.resolvedFiltersMapping[key] + ' = ' + value);
+    };
+
+    _handleResetAction = () => {
+        this.setState({
+            currentListData: this.listData,
+            pageCount: this._fullListPageCount,
+            currentPage: 0
+        });
+
+        return {
+            operation: SearchForm.RESET_FORM_CONFIGURATION
+        };
     };
 
     _handleSearch = (formData, changedFormFields) => {
@@ -148,46 +169,42 @@ class FlexList extends Component {
         }
 
         if (resetAll) {
-            results = this.listData;
-            resultsPageCount = this._fullListPageCount;
-            messageToSearchForm = {
-                operation: SearchForm.RESET_FORM_CONFIGURATION
-            };
-        } else {
-            let queryWhere = queryFiltersConditions.join(' AND '),
-                selection = '*',
-                filtersVisibilityConfig = {};
+            return this._handleResetAction();
+        }
 
-            for (let filterKey in this.toBeUpdatedFilters) {
-                let propertyFieldName = this.resolvedFiltersMapping.hasOwnProperty(filterKey) ?
-                    this.resolvedFiltersMapping[filterKey] : filterKey;
+        let queryWhere = queryFiltersConditions.join(' AND '),
+            selection = '*',
+            filtersVisibilityConfig = {};
 
-                selection += (`, ${propertyFieldName}->_updateFilterDataOnSearch->bind("", "${filterKey}")`);
-                filtersVisibilityConfig[filterKey] =
-                    this.props.filtersVisibilityOnSearch[filterKey] === FlexList.HIDE_UNUSED_FILTERS_OPTIONS ?
-                        SearchForm.HIDE_UNUSED_OPTION : SearchForm.DISABLE_UNUSED_OPTION
-            }
+        for (let filterKey in this.toBeUpdatedFilters) {
+            let propertyFieldName = this.resolvedFiltersMapping.hasOwnProperty(filterKey) ?
+                this.resolvedFiltersMapping[filterKey] : filterKey;
 
-            if (searchKeywords.length) {
-                queryWhere = queryWhere + (queryWhere.length ? ' AND ' : '') + '(' + queryKeywordsConditions + ')';
-            }
+            selection += (`, _callback->callback(_updateFilterDataOnSearch->bind("", "${filterKey}", ${propertyFieldName}))`);
+            filtersVisibilityConfig[filterKey] =
+                this.props.filtersVisibilityOnSearch[filterKey] === FlexList.HIDE_UNUSED_FILTERS_OPTIONS ?
+                    SearchForm.HIDE_UNUSED_OPTION : SearchForm.DISABLE_UNUSED_OPTION
+        }
 
-            results = new QuerySearch()
-                .select(selection)
-                .from(this.listData)
-                .where(queryWhere)
-                .execute();
-            resultsPageCount = Math.ceil(results.length / this.props.pageSize);
+        if (searchKeywords.length) {
+            queryWhere = queryWhere + (queryWhere.length ? ' AND ' : '') + '(' + queryKeywordsConditions + ')';
+        }
 
-            messageToSearchForm = {
-                operation: selection.length > 1 ? SearchForm.UPDATE_FORM_CONFIGURATION : SearchForm.NOTHING_TO_CHANGE,
-                filtersData: this.toBeUpdatedFilters,
-                filtersVisibility: filtersVisibilityConfig
-            };
+        results = new QuerySearch()
+            .select(selection)
+            .from(this.listData)
+            .where(queryWhere)
+            .execute();
+        resultsPageCount = Math.ceil(results.length / this.props.pageSize);
 
-            if(typeof this.props.afterSearch === 'function') {
-                results = this.props.afterSearch(formData, changedFormFields, results);
-            }
+        messageToSearchForm = {
+            operation: selection.length > 1 ? SearchForm.UPDATE_FORM_CONFIGURATION : SearchForm.NOTHING_TO_CHANGE,
+            filtersData: this.toBeUpdatedFilters,
+            filtersVisibility: filtersVisibilityConfig
+        };
+
+        if(typeof this.props.afterSearch === 'function') {
+            results = this.props.afterSearch(formData, changedFormFields, results);
         }
 
         this.setState({
