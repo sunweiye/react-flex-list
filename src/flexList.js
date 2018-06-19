@@ -140,6 +140,7 @@ class FlexList extends Component {
             searchKeywords = '',
             queryKeywordsConditions = '',
             queryFiltersConditions = [],
+            querySorting = [],
             resultsPageCount,
             messageToSearchForm;
 
@@ -152,7 +153,7 @@ class FlexList extends Component {
             this.props.beforeSearch(formData, changedFormFields);
         }
 
-        const {_q, ...filters} = formData;
+        const {_q, _sorting, ...filters} = formData;
 
         if (_q !== '') {
             resetAll = false;
@@ -165,6 +166,12 @@ class FlexList extends Component {
             if (!Utility.isEmpty(filters[filterKey])) {
                 resetAll = false;
                 queryFiltersConditions.push(this._buildFilterCondition(filterKey, filters[filterKey]));
+            }
+        }
+
+        if (!Utility.isEmpty(_sorting) && typeof _sorting === 'object') {
+            for (let fieldKey in _sorting) {
+                querySorting.push(fieldKey + ' ' + _sorting[fieldKey]);
             }
         }
 
@@ -194,6 +201,7 @@ class FlexList extends Component {
             .select(selection)
             .from(this.listData)
             .where(queryWhere)
+            .sort(querySorting.join(','))
             .execute();
         resultsPageCount = Math.ceil(results.length / this.props.pageSize);
 

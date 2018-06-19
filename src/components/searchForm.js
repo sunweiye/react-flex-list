@@ -123,7 +123,7 @@ class SearchForm extends Component {
     };
 
     _getChangedFieldsData = (search, filters) => {
-        let {_q, ...lastFilters} = this.state.formData,
+        let {_q, _sorting, ...theFilters} = this.state.formData,
             lastSearchInput = Utility.isEmpty(this.state.formData['_q']) ? '' : this.state.formData['_q'],
             changedFields = new Set();
 
@@ -136,7 +136,7 @@ class SearchForm extends Component {
 
         // @todo Deep compare for the filters. Now a simple first level compare is uesd
         for (let filterKey in filters) {
-            if (lastFilters[filterKey] !== filters[filterKey]) {
+            if (theFilters[filterKey] !== filters[filterKey]) {
                 changedFields.add(filterKey);
                 if (this.props.searchOnChange) {
                     return changedFields;
@@ -148,7 +148,7 @@ class SearchForm extends Component {
     };
 
     _submitSearchingData = ({formData}) => {
-        const {_q, ...filters} = formData;
+        const {_q, _sorting, ...filters} = formData;
         formData._q = Utility.isEmpty(_q) ? '' : _q.trim();
 
         let changedFormFields = this._getChangedFieldsData(formData._q, filters);
