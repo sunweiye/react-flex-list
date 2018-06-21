@@ -236,7 +236,8 @@ class FlexList extends Component {
         const searchFormProps = {
             ...SearchFormSettings,
             ...this.props.searchForm,
-            onSearch: this._handleSearch
+            onSearch: this._handleSearch,
+            ref: (searchForm) => {this.searchForm = searchForm;}
         };
 
         return <SearchForm {...searchFormProps} />;
@@ -255,6 +256,13 @@ class FlexList extends Component {
             </nav>;
         } else {
             return '';
+        }
+    }
+
+    reset() {
+        this._handleResetAction();
+        if(this.searchForm) {
+            this.searchForm.resetForm();
         }
     }
 

@@ -173,6 +173,14 @@ class SearchForm extends Component {
         }
     };
 
+    resetForm = () => {
+        this.setState({
+            schema: this.props.schema,
+            uiSchema: this.props.uiSchema,
+            formData: this.props.formData
+        });
+    };
+
     render() {
         const {onSchemaUpdate, onSubmit, onChange, onSearch, searchOnChange, schema, uiSchema, formData, ...formProps} = this.props;
         formProps.onSubmit = this._submitSearchingData;
