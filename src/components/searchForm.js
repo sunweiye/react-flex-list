@@ -144,7 +144,7 @@ class SearchForm extends Component {
             }
         }
 
-        return false;
+        return changedFields.size ? changedFields : false;
     };
 
     _submitSearchingData = ({formData}) => {
