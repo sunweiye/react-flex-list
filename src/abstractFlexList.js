@@ -4,7 +4,6 @@ import ReactPaginate from 'react-paginate';
 import SearchForm from './components/searchForm';
 import ListContainer from './components/listContainer';
 import Utility from "./ulits/utility";
-import FlexList from "./flexList";
 
 const SearchFormSettings = {
     searchOnChange: false
@@ -12,9 +11,19 @@ const SearchFormSettings = {
 
 class AbstractFlexList extends Component {
     static getDerivedStateFromProps(props, state) {
-        return {
-            currentListData: AbstractFlexList.preProcessListData(props.listData, props.listDataItemPreprocessor),
-            paginationSettings: props.paginationSettings
+        const {listData, listDataItemPreprocessor, ...otherProps} = props;
+        if (listData !== state.previousPropsListData) {
+            return {
+                currentListData: AbstractFlexList.preProcessListData(listData, listDataItemPreprocessor),
+                previousPropsListData: listData,
+                ...otherProps
+            }
+        } else {
+            const {currentListData, ...otherStates} = state;
+            return {
+                currentListData: AbstractFlexList.preProcessListData(currentListData, listDataItemPreprocessor),
+                ...otherStates
+            }
         }
     }
 
@@ -28,19 +37,7 @@ class AbstractFlexList extends Component {
         return listData;
     }
 
-    constructor(props) {
-        super(props);
-        this.listData = this._preProcess();
-        this.state = {
-            currentListData: this.listData,
-            paginationSettings: this.props.paginationSettings
-        }
-    }
-
-    _preProcess = () => {
-        const {listData, listDataItemPreprocessor} = this.props;
-        return AbstractFlexList.preProcessListData(listData, listDataItemPreprocessor);
-    };
+    state = {};
 
     _handleResetAction = () => {
         throw new Error('The handle reset action must be implemented.');

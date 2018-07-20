@@ -18,7 +18,7 @@ class SimpleFlexList extends AbstractFlexList {
 
     render() {
         const {listData, listDataItemPreprocessor, renderItem, searchForm, searchTextFields, filtersFieldsMap, filtersVisibilityOnSearch, pageSize, paginationSettings, listContainerSettings, onListRender, asyncDataLoader, ...containerProps} = this.props;
-        const {currentListData, currentPage} = this.state;
+        const {currentListData} = this.state;
         return (
             <div {...containerProps}>
                 {this._renderSearchForm()}
