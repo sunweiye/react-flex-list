@@ -33,7 +33,20 @@ class FlexList extends Component {
         this.state = {
             currentListData: this.listData,
             pageCount: this._fullListPageCount,
-            currentPage: 0
+            currentPage: 0,
+            initialSearch: this.props.initialSearch
+        }
+    }
+
+    componentDidMount() {
+        if(this.state.initialSearch) {
+            this.searchForm._submitSearchingData({
+                formData: this.state.initialSearch
+            });
+
+            this.setState({
+                initialSearch: null
+            });
         }
     }
 
@@ -267,7 +280,22 @@ class FlexList extends Component {
     }
 
     render() {
-        const {listData, listDataItemPreprocessor, renderItem, searchForm, searchTextFields, filtersFieldsMap, filtersVisibilityOnSearch, pageSize, paginationSettings, listContainerSettings, onListRender, beforeSearch, afterSearch, ...containerProps} = this.props;
+        const {
+            listData,
+            listDataItemPreprocessor,
+            renderItem,
+            searchForm,
+            searchTextFields,
+            filtersFieldsMap,
+            filtersVisibilityOnSearch,
+            pageSize,
+            paginationSettings,
+            listContainerSettings,
+            onListRender,
+            beforeSearch,
+            afterSearch,
+            initialSearch,
+            ...containerProps} = this.props;
         const {currentListData, currentPage} = this.state;
         return (
             <div {...containerProps}>
@@ -307,7 +335,8 @@ FlexList.propsTypes = {
     onListRender: PropTypes.func,
     renderItem: PropTypes.func,
     beforeSearch: PropTypes.func,
-    afterSearch: PropTypes.func
+    afterSearch: PropTypes.func,
+    initialSearch: PropTypes.object
 };
 
 export default FlexList

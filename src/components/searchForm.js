@@ -90,7 +90,6 @@ class SearchForm extends Component {
 
     };
 
-
     _updateSchemaConfigurations = (toBeShownFilters, visibilityConfig, changedFormFields, formData) => {
         let schemaProperties = {...this.props.schema.properties},
             uiSchema = {...this.props.uiSchema},
