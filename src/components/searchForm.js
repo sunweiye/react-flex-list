@@ -158,10 +158,8 @@ class SearchForm extends Component {
                 schemaConfiguration = {};
 
             if (message.operation === SearchForm.RESET_FORM_CONFIGURATION) {
-                schemaConfiguration = {
-                    schema: this.props.schema,
-                    uiSchema: this.props.uiSchema
-                }
+                this.resetForm();
+                return;
             } else if (message.operation === SearchForm.UPDATE_FORM_CONFIGURATION) {
                 schemaConfiguration = this._updateSchemaConfigurations(message.filtersData, message.filtersVisibility, changedFormFields, formData);
             }
