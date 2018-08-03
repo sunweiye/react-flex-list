@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, Fragment} from 'react';
 import PropTypes from "prop-types";
 
 class ListContainer extends Component {
@@ -6,11 +6,13 @@ class ListContainer extends Component {
         const {listTagName, data, renderItem, onListRender, emptyListContent, children, childrenBeforeList, listClassName, ...listContainerProps} = this.props;
         const ListTag = listTagName;
         return (
-            <div {...listContainerProps}>
+            <Fragment>
                 {childrenBeforeList ? children : ''}
-                <ListTag className={listClassName}>{data.length ? onListRender(data).map((itemData, index) => renderItem(index, itemData)) : emptyListContent}</ListTag>
+                <div {...listContainerProps}>
+                    <ListTag className={listClassName}>{data.length ? onListRender(data).map((itemData, index) => renderItem(index, itemData)) : emptyListContent}</ListTag>
+                </div>
                 {!childrenBeforeList ? children : ''}
-            </div>
+            </Fragment>
         );
     }
 }

@@ -32,6 +32,7 @@ class FlexList extends Component {
         this._fullListPageCount = Math.ceil(this.props.listData.length / this.props.pageSize);
         this.state = {
             currentListData: this.listData,
+            resultsCount: this.listData.length,
             pageCount: this._fullListPageCount,
             currentPage: 0,
             initialSearch: this.props.initialSearch
@@ -138,6 +139,7 @@ class FlexList extends Component {
     _handleResetAction = () => {
         this.setState({
             currentListData: this.listData,
+            resultsCount: this.listData.length,
             pageCount: this._fullListPageCount,
             currentPage: 0
         });
@@ -230,6 +232,7 @@ class FlexList extends Component {
 
         this.setState({
             currentListData: results,
+            resultsCount: results.length,
             pageCount: resultsPageCount,
             currentPage: 0
         });
@@ -241,7 +244,7 @@ class FlexList extends Component {
         this.setState({currentPage: selected});
     };
 
-    _renderSearchForm() {
+    _renderSearchForm = () => {
         if (this.props.searchForm.disable) {
             return '';
         }
@@ -254,9 +257,9 @@ class FlexList extends Component {
         };
 
         return <SearchForm {...searchFormProps} />;
-    }
+    };
 
-    _renderPagination() {
+    _renderPagination = () => {
         if (this.state.pageCount > 1) {
             const {className, ...paginationSettings} = this.props.paginationSettings;
             let paginationProps = {
@@ -270,14 +273,18 @@ class FlexList extends Component {
         } else {
             return '';
         }
-    }
+    };
 
-    reset() {
+    _renderResultsCount = () => {
+        console.log(this.props.resultsCount);
+    };
+
+    reset = () => {
         this._handleResetAction();
         if(this.searchForm) {
             this.searchForm.resetForm();
         }
-    }
+    };
 
     render() {
         const {
@@ -295,8 +302,9 @@ class FlexList extends Component {
             beforeSearch,
             afterSearch,
             initialSearch,
+            resultsCountRender,
             ...containerProps} = this.props;
-        const {currentListData, currentPage} = this.state;
+        const {currentListData, resultsCount, currentPage} = this.state;
         return (
             <div {...containerProps}>
                 {this._renderSearchForm()}
@@ -306,6 +314,7 @@ class FlexList extends Component {
                     onListRender={onListRender}
                     {...listContainerSettings}
                 />
+                {resultsCountRender ? resultsCountRender({dataValue: resultsCount}) : ''}
                 {this._renderPagination()}
             </div>
         );
@@ -336,7 +345,8 @@ FlexList.propsTypes = {
     renderItem: PropTypes.func,
     beforeSearch: PropTypes.func,
     afterSearch: PropTypes.func,
-    initialSearch: PropTypes.object
+    initialSearch: PropTypes.object,
+    resultsCountRender: PropTypes.func
 };
 
 export default FlexList
