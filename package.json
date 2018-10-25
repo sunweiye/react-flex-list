@@ -4,6 +4,10 @@
   "description": "A flexible list with search and filters",
   "author": "Weiye Sun",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sunweiye/react-flex-list.git"
+  },
   "main": "./lib",
   "files": [
     "dist",
@@ -12,8 +16,8 @@
   "dependencies": {
     "alasql": "^0.4.6",
     "prop-types": "^15.6.1",
-    "react": "^16.3.1",
-    "react-dom": "^16.3.1",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
     "react-jsonschema-form": "^1.0.3",
     "react-paginate": "^5.2.2"
   },
@@ -24,6 +28,7 @@
     "babel-loader": "^7.1.4",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
     "cross-env": "^5.1.4",

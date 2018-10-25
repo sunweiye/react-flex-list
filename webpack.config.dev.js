@@ -5,6 +5,7 @@ module.exports = {
     devtool: "eval",
     mode: process.env.NODE_ENV,
     entry: [
+        'babel-polyfill',
         "react-hot-loader/patch",
         "webpack-hot-middleware/client?reload=true",
         "webpack/hot/only-dev-server",

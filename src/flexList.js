@@ -267,6 +267,9 @@ class FlexList extends Component {
                 pageCount: this.state.pageCount,
                 onPageChange: this._handlePageClick
             };
+            if(this.state.currentPage === 0) {
+                paginationProps.forcePage = this.state.currentPage;
+            }
             return <nav className={className}>
                 <ReactPaginate {...paginationProps}/>
             </nav>;
