@@ -9,9 +9,11 @@
     "url": "https://github.com/sunweiye/react-flex-list.git"
   },
   "main": "./lib",
+  "module": "./module",
   "files": [
     "dist",
-    "lib"
+    "lib",
+    "module"
   ],
   "dependencies": {
     "alasql": "^0.4.6",
@@ -44,8 +46,10 @@
     "webpack-dev-middleware": "^3.1.2",
     "webpack-hot-middleware": "^2.21.2"
   },
+  "sideEffects": false,
   "scripts": {
     "build:lib": "cross-env NODE_ENV=production babel -d lib/ src/",
+    "build:module": "cross-env NODE_ENV=production babel -d module/ src/",
     "start": "NODE_ENV=development node devServer.js"
   }
 }
