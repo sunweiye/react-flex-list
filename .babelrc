@@ -1,17 +1,11 @@
 {
   "presets": [
-    ["env",
-      {
-        "targets": {
-          "browsers": ["last 3 versions", "ie >= 10", "safari >= 7"]
-        }
-      }
-    ],
-    "react"
+    "@babel/preset-env",
+    "@babel/preset-react"
   ],
   "plugins": [
-    "react-hot-loader/babel",
-    "transform-object-rest-spread",
-    "transform-class-properties"
+    [
+      "@babel/plugin-proposal-class-properties"
+    ]
   ]
 }

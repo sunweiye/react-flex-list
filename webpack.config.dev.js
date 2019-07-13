@@ -5,10 +5,6 @@ module.exports = {
     devtool: "eval",
     mode: process.env.NODE_ENV,
     entry: [
-        'babel-polyfill',
-        "react-hot-loader/patch",
-        "webpack-hot-middleware/client?reload=true",
-        "webpack/hot/only-dev-server",
         "./example/index.js"
     ],
     output: {
@@ -27,42 +23,25 @@ module.exports = {
         //do not emit compiled assets that include errors
     ],
     module: {
-        rules:[
+        rules: [
             {
                 test: /\.jsx?$/,
                 include: [
                     path.join(__dirname, "example"),
                     path.join(__dirname, "src")
                 ],
+                exclude: /node_modules/,
                 loader: require.resolve('babel-loader'),
                 options: {
-                    // This is a feature of `babel-loader` for Webpack (not Babel itself).
-                    // It enables caching results in ./node_modules/.cache/babel-loader/
-                    // directory for faster rebuilds.
                     cacheDirectory: true,
                     plugins: ['react-hot-loader/babel'],
                     compact: false
                 },
             },
-            // {
-            //     test: /\.jsx?$/,
-            //     include: [
-            //         path.join(__dirname, "example")
-            //     ],
-            //     use: [
-            //         {loader: 'react-hot-loader/webpack', query: {compact: false}},
-            //         {loader: 'babel-loader', query: {compact: false}}
-            //     ]
-            // },
-            // {
-            //     test: /\.css$/,
-            //     use: { loader: "style-loader" },
-            //     include: [
-            //         path.join(__dirname, "css"),
-            //         path.join(__dirname, "playground"),
-            //         path.join(__dirname, "node_modules"),
-            //     ]
-            // }
+            {
+                test:/\.css$/,
+                use:['style-loader','css-loader']
+            }
         ]
     }
 };
