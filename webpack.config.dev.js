@@ -5,7 +5,7 @@ module.exports = {
     devtool: "eval",
     mode: process.env.NODE_ENV,
     entry: [
-        "./example/index.js"
+        "./examples/index.js"
     ],
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -27,7 +27,7 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 include: [
-                    path.join(__dirname, "example"),
+                    path.join(__dirname, "examples"),
                     path.join(__dirname, "src")
                 ],
                 exclude: /node_modules/,
