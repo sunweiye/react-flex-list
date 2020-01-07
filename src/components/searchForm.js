@@ -20,9 +20,7 @@ class SearchForm extends Component {
     };
 
     resetFormData = (formData = {}) => {
-        this.setState({
-            formData: isEmpty(formData) ? this._emptyFormData : formData
-        });
+        this._submitSearchingData(isEmpty(formData) ? this._emptyFormData : formData);
     };
 
     render() {

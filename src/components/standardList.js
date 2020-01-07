@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, Fragment} from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 
@@ -14,29 +14,42 @@ class StandardList extends Component {
         return Math.ceil(total / pageSize)
     }
 
-    _listData = [];
+    _data = [];
     _repository = getRepository();
     _renderProps = {};
     _searchForm = null;
+    _defaultRenderOrder = ['form', 'list', 'info', 'pagination', 'children'];
+    state = {
+        query: null,
+        totalResults: 0,
+        currentPage: 0,
+        pageSize: this.props.pageSize,
+        pageCount: 0,
+        shownData: [],
+        initialized: typeof this.props.initializationRender !== 'function'
+    };
 
     constructor(props) {
         super(props);
         this._preProcess();
+    }
 
-        this.state = {
-            query: null,
-            currentPage: 0,
-            pageSize: this.props.pageSize,
-            currentListData: [],
-            initialized: typeof this.props.initializationRender !== 'function'
-        }
+    async componentDidMount() {
+        await this._repository.insertRows(this._data)
+            .then((result => {
+                // Release the memory of list data
+                delete this._data;
+                return result;
+            }));
+        await this._repository.createIndex(this.props.indexFields);
+        this._handleSearch(this.props.searchForm.formData);
     }
 
     //TODO: Enable set the id field
     _preProcess = () => {
         const {
-                listData,
-                listDataItemPreprocessor,
+                data,
+                itemPreprocessor,
                 itemRender,
                 searchForm,
                 indexFields,
@@ -48,40 +61,35 @@ class StandardList extends Component {
                 pageSize,
                 paginationSettings,
                 listContainerSettings,
-                beforeRenderList,
                 beforeSearch,
                 afterSearch,
-                resultsCountRender,
+                resultInfoRender,
                 afterPageChanged,
+                renderOrder,
                 ...containerProps
             } = this.props,
-            processors = [generateDocIdByTime, ...(typeof listDataItemPreprocessor === 'function' ? [listDataItemPreprocessor] : [])];
-
-        if (typeof itemRender !== 'function') {
-            // TODO: Message only be shown in development mode
-            console.error('The `itemRender` props is not given.');
-        }
+            processors = [generateDocIdByTime, ...(typeof itemPreprocessor === 'function' ? [itemPreprocessor] : [])];
 
         Object.defineProperties(this, {
             _renderProps: {
                 value: {
                     containerProps,
                     itemRender,
-                    beforeRenderList,
                     listContainerSettings,
-                    resultsCountRender
+                    resultInfoRender,
+                    renderOrder
                 },
                 writable: false
             }
         });
 
-        for (let itemKey in listData) {
+        for (let itemKey in data) {
             for (let processor of processors) {
-                processor(listData[itemKey], itemKey);
+                processor(data[itemKey], itemKey);
             }
         }
 
-        this._listData = listData;
+        this._data = data;
     };
 
     _buildFieldQuery = (fieldDef, operator, userValue) => {
@@ -93,7 +101,11 @@ class StandardList extends Component {
                 }
             };
         }
-        return {[fieldDef.replace(/->/g, '.')]: {[operator]: userValue}};
+        if(fieldDef.length) {
+            return {[fieldDef.replace(/->/g, '.')]: {[operator]: userValue}};
+        }
+
+        return operator === '$regex' ? {$regex: userValue} : userValue;
     };
 
     _handleSearch = async (formData) => {
@@ -141,10 +153,13 @@ class StandardList extends Component {
             afterSearch(formDataForSearching, docs);
         }
 
+        const {pageSize, initialized} = this.state;
+
         this.setState({
-            resultsCount: total_rows,
-            pageCount: StandardList.calculatePageCount(total_rows, this.state.pageSize),
-            currentListData: docs,
+            initialized: true | initialized,
+            totalResults: total_rows,
+            pageCount: StandardList.calculatePageCount(total_rows, pageSize),
+            shownData: docs,
             currentPage: 0,
             query
         });
@@ -154,7 +169,7 @@ class StandardList extends Component {
         const {query} = this.state;
         query.skip(selected * this.state.pageSize);
         this._executeQuery(query).then(({docs}) => this.setState({
-            currentListData: docs,
+            shownData: docs,
             currentPage: selected
         }));
         if (typeof this.props.afterPageChanged === 'function') {
@@ -165,16 +180,6 @@ class StandardList extends Component {
     _executeQuery = async (query, withTotalCount = false) => {
         return this._repository.search(query, withTotalCount);
     };
-
-    async componentDidMount() {
-        await this._repository.insertRows(this._listData)
-            .then(() => {
-                this._listData = null;
-                return this._repository.createIndex(this.props.indexFields);
-            });
-        this._handleSearch(this.props.searchForm.formData);
-        this.setState({initialized: true});
-    }
 
     _renderSearchForm() {
         const {disabled, ...formProps} = this.props.searchForm;
@@ -196,15 +201,24 @@ class StandardList extends Component {
     };
 
     _renderContent() {
-        const {resultsCount, currentListData, pageCount} = this.state,
-            {containerProps, itemRender, beforeRenderList, listContainerSettings} = this._renderProps;
-        let listContainerProps = {itemRender, beforeRenderList, ...listContainerSettings};
+        const {totalResults, shownData, pageCount, pageSize, currentPage} = this.state,
+            {containerProps, itemRender, listContainerSettings, renderOrder} = this._renderProps;
+        let listContainerProps = {itemRender, ...listContainerSettings},
+            customRenderOrder = renderOrder.filter((element) => this._defaultRenderOrder.includes(element)),
+            restDefaultOrder = this._defaultRenderOrder.filter((element) => !customRenderOrder.includes(element)),
+            renderElements = {
+                form: isEmpty(this.props.searchForm) ? '' : this._renderSearchForm(),
+                list: <ListContainer data={shownData} {...listContainerProps}/>,
+                info: typeof this.props.resultInfoRender === 'function' ? this.props.resultInfoRender({totalResults, shownData, pageCount, pageSize, currentPage}) : '',
+                pagination: pageCount > 1 ? this._renderPagination() : '',
+                children: this.props.children ? this.props.children : ''
+            };
+
         return (
             <div {...containerProps}>
-                {isEmpty(this.props.searchForm) ? '' : this._renderSearchForm()}
-                <ListContainer data={currentListData} {...listContainerProps}/>
-                {typeof this.props.resultsCountRender === 'function' ? this.props.resultsCountRender(resultsCount) : ''}
-                {pageCount > 1 ? this._renderPagination() : ''}
+                {[...customRenderOrder, ...restDefaultOrder].map(
+                    elementKey => <Fragment key={`content-${elementKey}`}>{renderElements[elementKey]}</Fragment>
+                )}
             </div>
         );
     }
@@ -219,36 +233,37 @@ class StandardList extends Component {
 }
 
 StandardList.defaultProps = {
+    listContainerSettings: {},
+    searchForm: {},
+    paginationSettings: {},
+    pageSize: 10,
     indexFields: [],
     textSearchFieldName: '_q',
     sortFieldName: '_sort',
     searchTextInFields: [],
     filtersFieldsMap: {},
-    listContainerSettings: {},
-    pageSize: 10,
-    searchForm: {},
-    paginationSettings: {}
+    renderOrder: []
 };
 
 StandardList.propsTypes = {
-    listData: PropTypes.array,
-    listDataItemPreprocessor: PropTypes.func,
+    data: PropTypes.array.isRequired,
+    itemPreprocessor: PropTypes.func,
+    searchForm: PropTypes.object,
+    listContainerSettings: PropTypes.object,
+    pageSize: PropTypes.number.isRequired,
+    paginationSettings: PropTypes.object,
+    initializationRender: PropTypes.func,
+    resultInfoRender: PropTypes.func,
+    itemRender: PropTypes.func.isRequired,
+    beforeSearch: PropTypes.func,
+    afterSearch: PropTypes.func,
+    afterPageChanged: PropTypes.func,
     indexFields: PropTypes.array,
     textSearchFieldName: PropTypes.string,
     sortFieldName: PropTypes.string,
     searchTextInFields: PropTypes.array,
     filtersFieldsMap: PropTypes.object,
-    searchForm: PropTypes.object,
-    listContainerSettings: PropTypes.object,
-    pageSize: PropTypes.number,
-    paginationSettings: PropTypes.object,
-    initializationRender: PropTypes.func,
-    beforeRenderList: PropTypes.func,
-    itemRender: PropTypes.func,
-    beforeSearch: PropTypes.func,
-    afterSearch: PropTypes.func,
-    resultsCountRender: PropTypes.func,
-    afterPageChanged: PropTypes.func
+    renderOrder: PropTypes.array
 };
 
 export default StandardList

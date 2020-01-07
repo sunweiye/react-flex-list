@@ -24,7 +24,7 @@ const ListContainer = (props) => {
             <div {...listContainerProps}>
                 <ListTag className={listClassName}>
                     {data.length ?
-                        beforeRenderList(data).map((itemData, index) => itemRender(index, itemData)) :
+                        data.map((itemData, index) => itemRender(index, itemData)) :
                         getEmptyListContent(emptyListContent)
                     }
                 </ListTag>
@@ -35,24 +35,21 @@ const ListContainer = (props) => {
 
 ListContainer.defaultProps = {
     listTagName: 'ul',
-    itemRender: (index, itemData) => <div key={index}>{itemData instanceof Object ? JSON.stringify(itemData) : itemData}</div>,
-    beforeRenderList: (data) => data,
     childrenBeforeList: false,
     listClassName: 'list-group'
 };
 
 ListContainer.propsTypes = {
     listTagName: PropTypes.string,
+    listClassName: PropTypes.string,
     data: PropTypes.array.isRequired,
-    itemRender: PropTypes.func,
-    beforeRenderList: PropTypes.func,
+    itemRender: PropTypes.func.isRequired,
     emptyListContent: PropTypes.oneOfType([
         PropTypes.node,
         PropTypes.func,
         PropTypes.instanceOf(Element)
     ]),
-    childrenBeforeList: PropTypes.bool,
-    listClassName: PropTypes.string
+    childrenBeforeList: PropTypes.bool
 };
 
 export default ListContainer;

@@ -3,10 +3,12 @@ import PropTypes from "prop-types";
 
 import StandardList from './components/standardList';
 import AsyncList from './components/asyncList';
+import SimpleList from "./components/simpleList";
 
 const ListTypes = {
     'standard': StandardList,
-    'async': AsyncList
+    'async': AsyncList,
+    'simple': SimpleList
 };
 
 const FlexList = React.forwardRef((props, ref) => {

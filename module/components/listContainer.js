@@ -1,88 +1,83 @@
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+"use strict";
 
-function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
 
-import React, { Component, Fragment } from 'react';
-import PropTypes from "prop-types";
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
-var ListContainer = function (_Component) {
-    _inherits(ListContainer, _Component);
+var _react = _interopRequireWildcard(require("react"));
 
-    function ListContainer() {
-        _classCallCheck(this, ListContainer);
+var _propTypes = _interopRequireDefault(require("prop-types"));
 
-        return _possibleConstructorReturn(this, (ListContainer.__proto__ || Object.getPrototypeOf(ListContainer)).apply(this, arguments));
-    }
+var getEmptyListContent = function getEmptyListContent(contentRender) {
+  switch ((0, _typeof2["default"])(contentRender)) {
+    case "function":
+      return contentRender();
 
-    _createClass(ListContainer, [{
-        key: 'render',
-        value: function render() {
-            var _props = this.props,
-                listTagName = _props.listTagName,
-                data = _props.data,
-                renderItem = _props.renderItem,
-                onListRender = _props.onListRender,
-                emptyListContent = _props.emptyListContent,
-                children = _props.children,
-                childrenBeforeList = _props.childrenBeforeList,
-                listClassName = _props.listClassName,
-                listContainerProps = _objectWithoutProperties(_props, ['listTagName', 'data', 'renderItem', 'onListRender', 'emptyListContent', 'children', 'childrenBeforeList', 'listClassName']);
-
-            var ListTag = listTagName;
-            return React.createElement(
-                Fragment,
-                null,
-                childrenBeforeList ? children : '',
-                React.createElement(
-                    'div',
-                    listContainerProps,
-                    React.createElement(
-                        ListTag,
-                        { className: listClassName },
-                        data.length ? onListRender(data).map(function (itemData, index) {
-                            return renderItem(index, itemData);
-                        }) : emptyListContent
-                    )
-                ),
-                !childrenBeforeList ? children : ''
-            );
+    case "string":
+      return _react["default"].createElement("div", {
+        dangerouslySetInnerHTML: {
+          __html: contentRender
         }
-    }]);
+      });
 
-    return ListContainer;
-}(Component);
+    case "object":
+      return contentRender instanceof Element ? _react["default"].createElement("div", {
+        dangerouslySetInnerHTML: {
+          __html: contentRender.outerHTML
+        }
+      }) : contentRender;
+
+    default:
+      return contentRender;
+  }
+};
+
+var ListContainer = function ListContainer(props) {
+  var listTagName = props.listTagName,
+      data = props.data,
+      itemRender = props.itemRender,
+      beforeRenderList = props.beforeRenderList,
+      emptyListContent = props.emptyListContent,
+      children = props.children,
+      childrenBeforeList = props.childrenBeforeList,
+      listClassName = props.listClassName,
+      listContainerProps = (0, _objectWithoutProperties2["default"])(props, ["listTagName", "data", "itemRender", "beforeRenderList", "emptyListContent", "children", "childrenBeforeList", "listClassName"]),
+      ListTag = listTagName,
+      childrenContent = _react["default"].createElement(_react.Fragment, {
+    key: "contents-children"
+  }, children),
+      listContent = _react["default"].createElement(_react.Fragment, {
+    key: "contents-the-list"
+  }, _react["default"].createElement("div", listContainerProps, _react["default"].createElement(ListTag, {
+    className: listClassName
+  }, data.length ? data.map(function (itemData, index) {
+    return itemRender(index, itemData);
+  }) : getEmptyListContent(emptyListContent))));
+
+  return childrenBeforeList ? [childrenContent, listContent] : [listContent, childrenContent];
+};
 
 ListContainer.defaultProps = {
-    listTagName: 'ul',
-    data: [],
-    renderItem: function renderItem(index, itemData) {
-        return React.createElement(
-            'div',
-            { key: index },
-            itemData instanceof Object ? JSON.stringify(itemData) : itemData
-        );
-    },
-    onListRender: function onListRender(data) {
-        return data;
-    },
-    childrenBeforeList: false,
-    listClassName: 'list-group'
+  listTagName: 'ul',
+  childrenBeforeList: false,
+  listClassName: 'list-group'
 };
-
 ListContainer.propsTypes = {
-    listTagName: PropTypes.string,
-    data: PropTypes.array,
-    renderItem: PropTypes.func,
-    onListRender: PropTypes.func,
-    emptyListContent: PropTypes.func,
-    childrenBeforeList: PropTypes.bool,
-    listClassName: PropTypes.string
+  listTagName: _propTypes["default"].string,
+  listClassName: _propTypes["default"].string,
+  data: _propTypes["default"].array.isRequired,
+  itemRender: _propTypes["default"].func.isRequired,
+  emptyListContent: _propTypes["default"].oneOfType([_propTypes["default"].node, _propTypes["default"].func, _propTypes["default"].instanceOf(Element)]),
+  childrenBeforeList: _propTypes["default"].bool
 };
-
-export default ListContainer;
+var _default = ListContainer;
+exports["default"] = _default;
