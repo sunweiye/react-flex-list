@@ -8,6 +8,7 @@ import {generateDocIdByTime} from '../ulits/preProcessors';
 import ListContainer from './listContainer';
 import SearchForm from "./searchForm";
 import ReactPaginate from "react-paginate";
+import {renderContentHelper} from "../ulits/helpers";
 
 class StandardList extends Component {
     static calculatePageCount(total, pageSize) {
@@ -19,6 +20,9 @@ class StandardList extends Component {
     _renderProps = {};
     _searchForm = null;
     _defaultRenderOrder = ['form', 'list', 'info', 'pagination', 'children'];
+    _initializationContent = '';
+    _afterSearchAction = docs => docs;
+
     state = {
         query: null,
         totalResults: 0,
@@ -26,7 +30,7 @@ class StandardList extends Component {
         pageSize: this.props.pageSize,
         pageCount: 0,
         shownData: [],
-        initialized: typeof this.props.initializationRender !== 'function'
+        initialized: false
     };
 
     constructor(props) {
@@ -42,7 +46,9 @@ class StandardList extends Component {
                 return result;
             }));
         await this._repository.createIndex(this.props.indexFields);
-        this._handleSearch(this.props.searchForm.formData);
+        this._handleSearch(this.props.searchForm.formData).then(
+            () => typeof this.props.afterInitialized === 'function' ? this.props.afterInitialized() : ''
+        );
     }
 
     //TODO: Enable set the id field
@@ -61,9 +67,11 @@ class StandardList extends Component {
                 pageSize,
                 paginationSettings,
                 listContainerSettings,
+                afterInitialized,
                 beforeSearch,
                 afterSearch,
                 resultInfoRender,
+                initializationRender,
                 afterPageChanged,
                 renderOrder,
                 ...containerProps
@@ -90,6 +98,10 @@ class StandardList extends Component {
         }
 
         this._data = data;
+        this._initializationContent = renderContentHelper(initializationRender);
+        if (typeof afterSearch === 'function') {
+            this._afterSearchAction = afterSearch;
+        }
     };
 
     _buildFieldQuery = (fieldDef, operator, userValue) => {
@@ -148,18 +160,14 @@ class StandardList extends Component {
             }
         }
 
-        const {total_rows, docs} = await this._executeQuery(query, true);
-        if (typeof afterSearch === 'function') {
-            afterSearch(formDataForSearching, docs);
-        }
-
-        const {pageSize, initialized} = this.state;
+        const {total_rows, docs} = await this._executeQuery(query, true),
+            {pageSize, initialized} = this.state;
 
         this.setState({
             initialized: true | initialized,
             totalResults: total_rows,
             pageCount: StandardList.calculatePageCount(total_rows, pageSize),
-            shownData: docs,
+            shownData: this._afterSearchAction(docs),
             currentPage: 0,
             query
         });
@@ -169,7 +177,7 @@ class StandardList extends Component {
         const {query} = this.state;
         query.skip(selected * this.state.pageSize);
         this._executeQuery(query).then(({docs}) => this.setState({
-            shownData: docs,
+            shownData: this._afterSearchAction(docs),
             currentPage: selected
         }));
         if (typeof this.props.afterPageChanged === 'function') {
@@ -224,7 +232,7 @@ class StandardList extends Component {
     }
 
     render() {
-        return this.state.initialized ? this._renderContent() : this.props.initializationRender();
+        return this.state.initialized ? this._renderContent() : this._initializationContent;
     }
 
     reset = (formData = {}) => {
@@ -252,9 +260,14 @@ StandardList.propsTypes = {
     listContainerSettings: PropTypes.object,
     pageSize: PropTypes.number.isRequired,
     paginationSettings: PropTypes.object,
-    initializationRender: PropTypes.func,
+    initializationRender: PropTypes.oneOfType([
+        PropTypes.node,
+        PropTypes.func,
+        PropTypes.instanceOf(Element)
+    ]),
     resultInfoRender: PropTypes.func,
     itemRender: PropTypes.func.isRequired,
+    afterInitialized: PropTypes.func,
     beforeSearch: PropTypes.func,
     afterSearch: PropTypes.func,
     afterPageChanged: PropTypes.func,

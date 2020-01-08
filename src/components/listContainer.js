@@ -1,20 +1,7 @@
 import React, {Fragment} from 'react';
 import PropTypes from "prop-types";
 
-const getEmptyListContent = (contentRender) => {
-    switch (typeof contentRender) {
-        case "function":
-            return contentRender();
-        case "string":
-            return <div dangerouslySetInnerHTML={{__html: contentRender}}/>;
-        case "object":
-            return contentRender instanceof Element ?
-                <div dangerouslySetInnerHTML={{__html: contentRender.outerHTML}}/> :
-                contentRender;
-        default:
-            return contentRender;
-    }
-};
+import {renderContentHelper} from "../ulits/helpers";
 
 const ListContainer = (props) => {
     const {listTagName, data, itemRender, beforeRenderList, emptyListContent, children, childrenBeforeList, listClassName, ...listContainerProps} = props,
@@ -25,7 +12,7 @@ const ListContainer = (props) => {
                 <ListTag className={listClassName}>
                     {data.length ?
                         data.map((itemData, index) => itemRender(index, itemData)) :
-                        getEmptyListContent(emptyListContent)
+                        renderContentHelper(emptyListContent)
                     }
                 </ListTag>
             </div>

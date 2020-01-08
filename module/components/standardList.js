@@ -55,6 +55,8 @@ var _searchForm = _interopRequireDefault(require("./searchForm"));
 
 var _reactPaginate = _interopRequireDefault(require("react-paginate"));
 
+var _helpers = require("../ulits/helpers");
+
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
@@ -80,6 +82,10 @@ function (_Component) {
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_renderProps", {});
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_searchForm", null);
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_defaultRenderOrder", ['form', 'list', 'info', 'pagination', 'children']);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_initializationContent", '');
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_afterSearchAction", function (docs) {
+      return docs;
+    });
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "state", {
       query: null,
       totalResults: 0,
@@ -87,7 +93,7 @@ function (_Component) {
       pageSize: _this.props.pageSize,
       pageCount: 0,
       shownData: [],
-      initialized: typeof _this.props.initializationRender !== 'function'
+      initialized: false
     });
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_preProcess", function () {
       var _this$props = _this.props,
@@ -104,12 +110,14 @@ function (_Component) {
           pageSize = _this$props.pageSize,
           paginationSettings = _this$props.paginationSettings,
           listContainerSettings = _this$props.listContainerSettings,
+          afterInitialized = _this$props.afterInitialized,
           beforeSearch = _this$props.beforeSearch,
           afterSearch = _this$props.afterSearch,
           resultInfoRender = _this$props.resultInfoRender,
+          initializationRender = _this$props.initializationRender,
           afterPageChanged = _this$props.afterPageChanged,
           renderOrder = _this$props.renderOrder,
-          containerProps = (0, _objectWithoutProperties2["default"])(_this$props, ["data", "itemPreprocessor", "itemRender", "searchForm", "indexFields", "textSearchFieldName", "sortFieldName", "searchTextInFields", "filtersFieldsMap", "filtersVisibilityOnSearch", "pageSize", "paginationSettings", "listContainerSettings", "beforeSearch", "afterSearch", "resultInfoRender", "afterPageChanged", "renderOrder"]),
+          containerProps = (0, _objectWithoutProperties2["default"])(_this$props, ["data", "itemPreprocessor", "itemRender", "searchForm", "indexFields", "textSearchFieldName", "sortFieldName", "searchTextInFields", "filtersFieldsMap", "filtersVisibilityOnSearch", "pageSize", "paginationSettings", "listContainerSettings", "afterInitialized", "beforeSearch", "afterSearch", "resultInfoRender", "initializationRender", "afterPageChanged", "renderOrder"]),
           processors = [_preProcessors.generateDocIdByTime].concat((0, _toConsumableArray2["default"])(typeof itemPreprocessor === 'function' ? [itemPreprocessor] : []));
       Object.defineProperties((0, _assertThisInitialized2["default"])(_this), {
         _renderProps: {
@@ -151,6 +159,11 @@ function (_Component) {
       }
 
       _this._data = data;
+      _this._initializationContent = (0, _helpers.renderContentHelper)(initializationRender);
+
+      if (typeof afterSearch === 'function') {
+        _this._afterSearchAction = afterSearch;
+      }
     });
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_buildFieldQuery", function (fieldDef, operator, userValue) {
       var arrayConfigFlagPosition = fieldDef.indexOf('[]');
@@ -232,23 +245,20 @@ function (_Component) {
                 _ref6 = _context.sent;
                 total_rows = _ref6.total_rows;
                 docs = _ref6.docs;
-
-                if (typeof afterSearch === 'function') {
-                  afterSearch(formDataForSearching, docs);
-                }
-
-                _this$state = _this.state, pageSize = _this$state.pageSize, initialized = _this$state.initialized;
+                _this$state = _this.state;
+                pageSize = _this$state.pageSize;
+                initialized = _this$state.initialized;
 
                 _this.setState({
                   initialized: true | initialized,
                   totalResults: total_rows,
                   pageCount: StandardList.calculatePageCount(total_rows, pageSize),
-                  shownData: docs,
+                  shownData: _this._afterSearchAction(docs),
                   currentPage: 0,
                   query: query
                 });
 
-              case 13:
+              case 14:
               case "end":
                 return _context.stop();
             }
@@ -268,7 +278,7 @@ function (_Component) {
       _this._executeQuery(query).then(function (_ref8) {
         var docs = _ref8.docs;
         return _this.setState({
-          shownData: docs,
+          shownData: _this._afterSearchAction(docs),
           currentPage: selected
         });
       });
@@ -356,7 +366,9 @@ function (_Component) {
                 return this._repository.createIndex(this.props.indexFields);
 
               case 4:
-                this._handleSearch(this.props.searchForm.formData);
+                this._handleSearch(this.props.searchForm.formData).then(function () {
+                  return typeof _this2.props.afterInitialized === 'function' ? _this2.props.afterInitialized() : '';
+                });
 
               case 5:
               case "end":
@@ -439,7 +451,7 @@ function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      return this.state.initialized ? this._renderContent() : this.props.initializationRender();
+      return this.state.initialized ? this._renderContent() : this._initializationContent;
     }
   }]);
   return StandardList;
@@ -464,9 +476,10 @@ StandardList.propsTypes = {
   listContainerSettings: _propTypes["default"].object,
   pageSize: _propTypes["default"].number.isRequired,
   paginationSettings: _propTypes["default"].object,
-  initializationRender: _propTypes["default"].func,
+  initializationRender: _propTypes["default"].oneOfType([_propTypes["default"].node, _propTypes["default"].func, _propTypes["default"].instanceOf(Element)]),
   resultInfoRender: _propTypes["default"].func,
   itemRender: _propTypes["default"].func.isRequired,
+  afterInitialized: _propTypes["default"].func,
   beforeSearch: _propTypes["default"].func,
   afterSearch: _propTypes["default"].func,
   afterPageChanged: _propTypes["default"].func,
