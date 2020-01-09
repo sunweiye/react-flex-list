@@ -9,7 +9,7 @@ const ListContainer = (props) => {
         childrenContent = <Fragment key='contents-children'>{children}</Fragment>,
         listContent = <Fragment key='contents-the-list'>
             <div {...listContainerProps}>
-                <ListTag className={listClassName}>
+                <ListTag className={listClassName + (data.length ? '' : ' no-result')}>
                     {data.length ?
                         data.map((itemData, index) => itemRender(index, itemData)) :
                         renderContentHelper(emptyListContent)
