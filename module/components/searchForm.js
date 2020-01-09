@@ -61,7 +61,9 @@ function (_Component) {
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "resetFormData", function () {
       var formData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-      _this._submitSearchingData((0, _isEmpty["default"])(formData) ? _this._emptyFormData : formData);
+      _this._submitSearchingData({
+        formData: (0, _isEmpty["default"])(formData) ? _this._emptyFormData : formData
+      });
     });
     _this._emptyFormData = _this.props.schema.type === 'string' ? '' : {};
     var _this$props = _this.props,
