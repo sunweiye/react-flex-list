@@ -51,7 +51,6 @@ class StandardList extends Component {
         );
     }
 
-    //TODO: Enable set the id field
     _preProcess = () => {
         const {
                 data,
@@ -63,7 +62,6 @@ class StandardList extends Component {
                 sortFieldName,
                 searchTextInFields,
                 filtersFieldsMap,
-                filtersVisibilityOnSearch,
                 pageSize,
                 paginationSettings,
                 listContainerSettings,
@@ -77,6 +75,10 @@ class StandardList extends Component {
                 ...containerProps
             } = this.props,
             processors = [generateDocIdByTime, ...(typeof itemPreprocessor === 'function' ? [itemPreprocessor] : [])];
+
+        // Make sure that the data and itemRender props don't exist in the list container props
+        delete listContainerSettings.data;
+        delete listContainerSettings.itemRender;
 
         Object.defineProperties(this, {
             _renderProps: {

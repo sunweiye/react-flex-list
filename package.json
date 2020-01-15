@@ -17,6 +17,7 @@
   ],
   "dependencies": {
     "@babel/runtime": "^7.7.7",
+    "core-js": "^3.6.4",
     "lodash": "^4.17.15",
     "pouchdb-adapter-memory": "^7.1.1",
     "pouchdb-core": "^7.1.1",
@@ -24,7 +25,8 @@
     "prop-types": "^15.7.2",
     "react-jsonschema-form": "^1.8.1",
     "react-paginate": "^6.3.2",
-    "uuid": "^3.3.3"
+    "uuid": "^3.3.3",
+    "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.0",

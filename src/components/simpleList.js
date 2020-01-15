@@ -5,23 +5,16 @@ import ReactPaginate from "react-paginate";
 import ListContainer from './listContainer';
 import SearchForm from "./searchForm";
 import isEmpty from "lodash/isEmpty";
-import {generateDocIdByTime} from "../ulits/preProcessors";
-
-const SearchFormSettings = {
-    searchOnChange: false
-};
 
 class SimpleList extends Component {
     static getDerivedStateFromProps(props, state) {
-        const {listData, ...otherStates} = state,
-            {pageSize, children, renderOrder} = props;
+        const {data, pageSize, children} = props;
 
         return {
-            listData: props.listData.slice(0, pageSize),
+            data: props.data.slice(0, pageSize),
             pageSize,
             pageCount: 0 | (isEmpty(props.paginationSettings) ? 0 : props.paginationSettings.pageCount),
-            children: children,
-            renderOrder
+            children: children
         };
     }
 
@@ -29,8 +22,7 @@ class SimpleList extends Component {
         listData: [],
         pageCount: 0,
         pageSize: this.props.pageSize,
-        children: this.props.children,
-        renderOrder: this.props.renderOrder
+        children: this.props.children
     };
 
     _defaultRenderOrder = ['form', 'list', 'info', 'pagination', 'children'];
@@ -62,7 +54,8 @@ class SimpleList extends Component {
                     containerProps,
                     itemRender,
                     listContainerSettings,
-                    resultInfoRender
+                    resultInfoRender,
+                    renderOrder
                 },
                 writable: false
             }
@@ -96,8 +89,8 @@ class SimpleList extends Component {
     };
 
     render() {
-        const {listData, pageCount, pageSize, children, renderOrder} = this.state,
-            {containerProps, itemRender, listContainerSettings} = this._renderProps;
+        const {listData, pageCount, pageSize, children} = this.state,
+            {containerProps, itemRender, listContainerSettings, renderOrder} = this._renderProps;
         let listContainerProps = {itemRender, ...listContainerSettings},
             customRenderOrder = renderOrder.filter((element) => this._defaultRenderOrder.includes(element)),
             restDefaultOrder = this._defaultRenderOrder.filter((element) => !customRenderOrder.includes(element)),
@@ -119,7 +112,6 @@ class SimpleList extends Component {
     }
 }
 
-
 SimpleList.defaultProps = {
     listContainerSettings: {},
     searchForm: {},
@@ -128,7 +120,7 @@ SimpleList.defaultProps = {
 };
 
 SimpleList.propsTypes = {
-    listData: PropTypes.array.isRequired,
+    data: PropTypes.array.isRequired,
     searchForm: PropTypes.object,
     listContainerSettings: PropTypes.object,
     pageSize: PropTypes.number.isRequired,
@@ -136,13 +128,11 @@ SimpleList.propsTypes = {
     initializationRender: PropTypes.func,
     resultInfoRender: PropTypes.func,
     itemRender: PropTypes.func.isRequired,
-    beforeRenderList: PropTypes.func,
     handelSearch: (props, propName, componentName) => {
         if(!isEmpty(props.searchForm) && !props.searchForm.disabled && typeof props[propName] !== 'function'){
             throw new Error('Please provide a handelSearch function!');
         }
     },
-    handelPageChange: PropTypes.func.isRequired,
     renderOrder: PropTypes.array
 };
 

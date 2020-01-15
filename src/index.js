@@ -1,3 +1,5 @@
+import 'core-js';
+import 'whatwg-fetch';
 import React, {Fragment} from 'react';
 import PropTypes from "prop-types";
 

@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-jsonschema-form';
-
 import isEmpty from 'lodash/isEmpty';
 
 class SearchForm extends Component {
@@ -26,27 +25,29 @@ class SearchForm extends Component {
     };
 
     render() {
-        const {onSchemaUpdate, onSubmit, onChange, onSearch, searchOnChange, schema, uiSchema, formData, ...formProps} = this.props;
-        formProps.onSubmit = this._submitSearchingData;
+        const {onSubmit, onChange, onSearch, searchOnChange, schema, uiSchema, formData, ...formProps} = this.props;
 
         if (searchOnChange) {
             formProps.onChange = this._submitSearchingData;
         }
-        return <Form {...formProps} schema={this.state.schema} uiSchema={this.state.uiSchema}
-                     formData={{...this.state.formData}}/>;
+        return <Form {...formProps}
+                     schema={this.state.schema}
+                     uiSchema={this.state.uiSchema}
+                     formData={{...this.state.formData}}
+                     onSubmit={this._submitSearchingData}
+        />;
     }
 }
 
 SearchForm.defaultProps = {
     searchOnChange: false,
-    children: <div className='flex-list__form'>
+    children: <div className='form'>
         <button className="btn" type="submit">Search</button>
     </div>
 };
 
 SearchForm.propTypes = {
     searchOnChange: PropTypes.bool,
-    onSchemaUpdate: PropTypes.func,
     schema: PropTypes.object.isRequired,
     uiSchema: PropTypes.object,
     formData: PropTypes.object,
